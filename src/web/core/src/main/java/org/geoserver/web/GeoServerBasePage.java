@@ -161,7 +161,8 @@ public class GeoServerBasePage extends WebPage implements IAjaxIndicatorAware {
                                     @Override
                                     protected void onComponentTag(
                                             org.apache.wicket.markup.ComponentTag tag) {
-                                        String loginPath = getResourcePath(info.getLoginPath());
+//                                        String loginPath = getResourcePath(info.getLoginPath());
+                                        String loginPath = getLoginPath(info);
                                         tag.put("action", loginPath);
                                     };
                                 };
@@ -422,6 +423,26 @@ public class GeoServerBasePage extends WebPage implements IAjaxIndicatorAware {
         String logoutPath =
                 ResponseUtils.buildURL(baseURL, path, null, URLMangler.URLType.RESOURCE);
         return logoutPath;
+    }
+
+    private String getLoginPath(LoginFormInfo info) {
+
+        String path = getRequest().getUrl().getPath();
+        StringBuilder loginPath = new StringBuilder();
+        if (path.isEmpty()) {
+            // home page
+            loginPath.append("../" + info.getLoginPath());
+        } else {
+            // bookmarked page of sorts
+            String[] pathElements = path.split("/");
+            for (String pathElement : pathElements) {
+                if (!pathElement.isEmpty()) {
+                    loginPath.append("../");
+                }
+            }
+            loginPath.append(info.getLoginPath());
+        }
+        return loginPath.toString();
     }
 
     @Override
