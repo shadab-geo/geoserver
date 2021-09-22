@@ -72,12 +72,29 @@ public class OSHISystemInfoCollector extends BaseSystemInfoCollector {
                             long previousTime = 0;
                             long timeDifference = 0;
                             while (processExists) {
+                                long now = System.nanoTime();
                                 OSProcess process = os.getProcess(os.getProcessId());
+                                long delta = System.nanoTime() - now;
+                                System.out.println("get processId time: " + delta / 1_000_000d + "ms");
                                 if (process != null) {
-                                    currentTime = process.getKernelTime() + process.getUserTime();
+                                    now = System.nanoTime();
+                                    long kernelTime = process.getKernelTime();
+                                    delta = System.nanoTime() - now;
+                                    System.out.println("get kernel time : " + delta / 1_000_000d + "ms");
+
+                                    now = System.nanoTime();
+                                    long userTime = process.getUserTime();
+                                    delta = System.nanoTime() - now;
+                                    System.out.println("get user time: " + delta / 1_000_000d + "ms");
+
+
+                                    currentTime = kernelTime + userTime;
                                     if (previousTime != -1) {
                                         timeDifference = currentTime - previousTime;
+                                        now = System.nanoTime();
                                         int processors = pr.getLogicalProcessorCount();
+                                        delta = System.nanoTime() - now;
+                                        System.out.println("get logical process count: " + delta / 1_000_000d + "ms");
                                         if (processors > 0) {
                                             cpuUsage =
                                                     (100d * (timeDifference / ((double) 1000)))
@@ -96,6 +113,7 @@ public class OSHISystemInfoCollector extends BaseSystemInfoCollector {
                                 } else {
                                     processExists = false;
                                 }
+                                System.out.println("cpuUsage: " + cpuUsage);
                             }
                         })
                 .start();
