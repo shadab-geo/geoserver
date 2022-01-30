@@ -251,6 +251,13 @@
         <module>schemaless-features</module>
         <module>web-service-auth</module>
         <module>gwc-mbtiles</module>
+        <module>databricks-connector</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>databricks-connector</id>
+      <modules>
+        <module>databricks-connector</module>
       </modules>
     </profile>
     <profile>
