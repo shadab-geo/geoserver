@@ -246,6 +246,13 @@
         <module>vsi</module>
         <module>teradata</module>
         <module>libdeflate</module>
+        <module>databricks-connector</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>databricks-connector</id>
+      <modules>
+        <module>databricks-connector</module>
       </modules>
     </profile>
     <profile>
