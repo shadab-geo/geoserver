@@ -144,6 +144,7 @@
     <mockito.version>3.12.4</mockito.version>
     <jacoco.version>0.8.6</jacoco.version>
     <hazelcast.version>3.11.1</hazelcast.version>
+    <databricks.jdbc.version>2.6.19.1030</databricks.jdbc.version>
     <argLine>-Xmx${test.maxHeapSize} -enableassertions ${jvm.opts} -Djava.awt.headless=${java.awt.headless} -Dsun.java2d.d3d=${sun.java2d.d3d} -DremoteOwsTests=${remoteOwsTests} -DquietTests=${quietTests} -Dorg.geotools.image.test.enabled=${image.tests} -Dorg.geotools.image.test.interactive=${interactive.image} -Duser.timezone=${user.timezone} -Dwindows.leniency=${windows.leniency} -XX:+TieredCompilation -XX:TieredStopAtLevel=1</argLine>
     <fmt.action>format</fmt.action>
     <fmt.skip>false</fmt.skip>
@@ -1423,6 +1424,11 @@
         <groupId>com.hazelcast</groupId>
         <artifactId>hazelcast-spring</artifactId>
         <version>${hazelcast.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>community.cloud.databricks.com</groupId>
+        <artifactId>SimbaSparkJDBC42</artifactId>
+        <version>${databricks.jdbc.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
