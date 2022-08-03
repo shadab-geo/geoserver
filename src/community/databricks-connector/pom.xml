@@ -38,7 +38,6 @@
     <dependency>
       <groupId>community.cloud.databricks.com</groupId>
       <artifactId>SimbaSparkJDBC42</artifactId>
-      <version>2.6.19.1030</version>
     </dependency>
   </dependencies>
 

@@ -3,10 +3,7 @@ package org.geoserver.databricks.ng;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import javax.sql.DataSource;
-import org.apache.commons.dbcp.BasicDataSource;
 import org.geotools.data.Parameter;
-import org.geotools.data.jdbc.datasource.DBCPDataSource;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.JDBCDataStoreFactory;
 import org.geotools.jdbc.SQLDialect;
@@ -19,26 +16,33 @@ public final class DatabricksJdbcDataStoreFactory extends JDBCDataStoreFactory {
                     String.class,
                     "Data store type",
                     true,
-                    "Databricks JDBC Connector",
+                    "databricks",
                     Collections.singletonMap(Parameter.LEVEL, "program"));
 
-    private static final Param DATABRICKS_JDBC_URL =
-            new Param(
-                    "JDBC Connection URL",
-                    String.class,
-                    "JDBC connection URL to Databricks SQL API",
-                    true,
-                    "jdbc:spark://<server-hostname>:443/default;"
-                            + "transportMode=http;ssl=1;"
-                            + "httpPath=sql/protocolv1/o/0/xxxx-xxxxxx-xxxxxxxx;"
-                            + "AuthMech=3;"
-                            + "UID=token;"
-                            + "PWD=<personal-access-token>",
-                    Collections.singletonMap(Parameter.IS_LARGE_TEXT, Boolean.TRUE));
+    /** Default port number for databricks */
+    public static final Param PORT = new Param("port", Integer.class, "Port", true, 443);
+
+    public static final Param TRANSPORT_MODE =
+            new Param("transportMode", String.class, "http", true, "http");
+
+    public static final Param SSL = new Param("ssl", Integer.class, "1", true, 1);
+
+    public static final Param HTTP_PATH = new Param("httpPath", String.class, "httpPath", true);
+
+    public static final Param AUTH_MECH = new Param("AuthMech", Integer.class, "3", true, 3);
+
+    /** Default username when connecting using personal access token */
+    public static final Param USER =
+            new Param("user", String.class, "user name to login as", true, "token");
 
     @Override
     protected String getDatabaseID() {
         return (String) DATABRICKS_DB_TYPE.sample;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Databricks";
     }
 
     @Override
@@ -62,17 +66,25 @@ public final class DatabricksJdbcDataStoreFactory extends JDBCDataStoreFactory {
     }
 
     @Override
-    protected DataSource createDataSource(Map<String, ?> params, SQLDialect dialect)
-            throws IOException {
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(getDriverClassName());
-        dataSource.setUrl((String) DATABRICKS_JDBC_URL.lookUp(params));
-        dataSource.setValidationQuery("select 1;");
-        return new DBCPDataSource(dataSource);
+    protected String getJDBCUrl(Map<String, ?> params) throws IOException {
+        String url =
+                "jdbc:spark://" + HOST.lookUp(params) + ":" + PORT.lookUp(params) + "/default;";
+        url = url + "transportMode=" + TRANSPORT_MODE.lookUp(params) + ";";
+        url = url + "ssl=" + SSL.lookUp(params) + ";";
+        url = url + "httpPath=" + HTTP_PATH.lookUp(params) + ";";
+        url = url + "AuthMech=" + AUTH_MECH.lookUp(params) + ";";
+        url = url + "UID=" + USER.lookUp(params) + ";";
+        url = url + "PWD=" + PASSWD.lookUp(params);
+        return url;
     }
 
     protected void setupParameters(Map<String, Object> parameters) {
-        parameters.put(DATABRICKS_DB_TYPE.key, DATABRICKS_DB_TYPE);
-        parameters.put(DATABRICKS_JDBC_URL.key, DATABRICKS_JDBC_URL);
+        super.setupParameters(parameters);
+        parameters.put(PORT.key, PORT);
+        parameters.put(USER.key, USER);
+        parameters.put(TRANSPORT_MODE.key, TRANSPORT_MODE);
+        parameters.put(SSL.key, SSL);
+        parameters.put(HTTP_PATH.key, HTTP_PATH);
+        parameters.put(AUTH_MECH.key, AUTH_MECH);
     }
 }
