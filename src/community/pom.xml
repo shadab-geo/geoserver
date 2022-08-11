@@ -247,12 +247,14 @@
         <module>teradata</module>
         <module>libdeflate</module>
         <module>databricks-connector</module>
+        <module>generated-geometries</module>
       </modules>
     </profile>
     <profile>
       <id>databricks-connector</id>
       <modules>
         <module>databricks-connector</module>
+        <module>generated-geometries</module>
       </modules>
     </profile>
     <profile>
