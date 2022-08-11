@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.geotools.data.jdbc.FilterToSQL;
 import org.geotools.jdbc.BasicSQLDialect;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.util.factory.Hints;
@@ -16,6 +17,11 @@ public final class DatabricksSqlDialect extends BasicSQLDialect {
 
     protected DatabricksSqlDialect(JDBCDataStore dataStore) {
         super(dataStore);
+    }
+
+    @Override
+    public FilterToSQL createFilterToSQL() {
+        return new DatabricksFilterToSQL();
     }
 
     @Override
