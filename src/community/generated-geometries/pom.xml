@@ -10,13 +10,13 @@
   <parent>
     <groupId>org.geoserver</groupId>
     <artifactId>community</artifactId>
-    <version>2.21-SNAPSHOT</version>
+    <version>2.22-SNAPSHOT</version>
   </parent>
 
   <groupId>org.geoserver.community</groupId>
   <artifactId>gs-generated-geometries</artifactId>
   <packaging>jar</packaging>
-  <name>STAR OGC GeoServer Generated Geometries</name>
+  <name>Generated Geometries</name>
 
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
