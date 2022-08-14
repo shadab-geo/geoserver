@@ -271,9 +271,7 @@ public class WkbGeometryGenerationStrategy
         try {
 
             properties =
-                    info.getFeatureType()
-                            .getDescriptors()
-                            .stream()
+                    info.getFeatureType().getDescriptors().stream()
                             .filter(
                                     propertyDescriptor ->
                                             !propertyDescriptor

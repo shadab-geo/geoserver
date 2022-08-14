@@ -235,17 +235,17 @@ public class LongLatGeometryGenerationStrategy
 
                 Point point = geometryFactory.createPoint(new Coordinate(x, y));
                 point.setSRID(getLongLatConfiguration(info).srid);
-                //LOGGER.log(Level.FINE, "Generated geometry: {0}", point);
+                // LOGGER.log(Level.FINE, "Generated geometry: {0}", point);
 
                 featureBuilder.add(point);
                 for (Property prop : simpleFeature.getProperties()) {
                     featureBuilder.set(prop.getName(), prop.getValue());
                 }
                 simpleFeature = featureBuilder.buildFeature(simpleFeature.getID());
-//                LOGGER.log(
-//                        Level.FINE,
-//                        "Resulting feature with generated geometry: {0}",
-//                        simpleFeature);
+                //                LOGGER.log(
+                //                        Level.FINE,
+                //                        "Resulting feature with generated geometry: {0}",
+                //                        simpleFeature);
             } catch (Exception e) {
                 String message =
                         format(
@@ -288,9 +288,7 @@ public class LongLatGeometryGenerationStrategy
             // no fields were sent, use all fields excluding geom field
             if (query.getPropertyNames() == null) {
                 properties =
-                        info.getFeatureType()
-                                .getDescriptors()
-                                .stream()
+                        info.getFeatureType().getDescriptors().stream()
                                 .filter(
                                         propertyDescriptor ->
                                                 !propertyDescriptor
