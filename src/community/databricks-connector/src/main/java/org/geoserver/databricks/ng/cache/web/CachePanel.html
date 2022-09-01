@@ -1,0 +1,31 @@
+<html xmlns:wicket="http://wicket.apache.org/">
+<head></head>
+<body>
+<form>
+    <wicket:panel>
+        <ul>
+            <li >
+                <fieldset>
+                    <legend><span><wicket:message key="cacheSettings">Caching Settings</wicket:message></span></legend>
+                    <ul>
+                        <li class="choiceItem">
+                            <input id="cachingEnabled" wicket:id="cachingEnabled" type="checkbox">
+                            <label for="cachingEnabled"><wicket:message key="cachingEnabled">Enable Cache</wicket:message></label>
+                        </li>
+                        <li>
+                            <label for="datastoreName"><wicket:message key="datastoreName">Choose Datastore:</wicket:message></label>
+                            <select class="select" id="datastoreName" wicket:id="datastoreName"></select>
+                        </li>
+                        <li>
+                            <label for="schemaName"><wicket:message key="schemaName">Schema name</wicket:message></label>
+                            <input id="schemaName" class="text" type="text" wicket:id="schemaName">
+                        </li>
+                    </ul>
+                </fieldset>
+            </li>
+        </ul>
+    </wicket:panel>
+
+</form>
+</body>
+</html>

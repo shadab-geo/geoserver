@@ -254,6 +254,11 @@
       <id>databricks-connector</id>
       <modules>
         <module>databricks-connector</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>generated-geometries</id>
+      <modules>
         <module>generated-geometries</module>
       </modules>
     </profile>

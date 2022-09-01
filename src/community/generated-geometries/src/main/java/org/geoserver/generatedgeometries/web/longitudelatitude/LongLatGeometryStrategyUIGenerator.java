@@ -9,7 +9,7 @@ import java.io.Serializable;
 import org.apache.wicket.Component;
 import org.apache.wicket.model.IModel;
 import org.geoserver.catalog.FeatureTypeInfo;
-import org.geoserver.generatedgeometries.core.longitudelatitude.LongLatGeometryGenerationStrategy;
+import org.geoserver.generatedgeometries.strategy.longitudelatitude.LongLatGeometryGenerationStrategy;
 import org.geoserver.generatedgeometries.web.GeometryGenerationStrategyUIGenerator;
 
 public class LongLatGeometryStrategyUIGenerator
