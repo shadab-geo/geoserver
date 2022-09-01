@@ -98,15 +98,15 @@ class GeometryGenerationFeatureCollection extends DecoratingSimpleFeatureCollect
         private SimpleFeature buildFinalFeature(SimpleFeature feature) {
             SimpleFeature generatedFeature =
                     strategy.generateGeometry(featureTypeInfo, schema, feature);
-//            LOGGER.log(
-//                    Level.FINE,
-//                    () ->
-//                            "Evaluating filter="
-//                                    + filter
-//                                    + " on generated feature="
-//                                    + generatedFeature);
+            LOGGER.log(
+                    Level.FINE,
+                    () ->
+                            "Evaluating filter="
+                                    + filter
+                                    + " on generated feature="
+                                    + generatedFeature);
             if (filter.evaluate(generatedFeature)) {
-                //LOGGER.log(Level.FINE, () -> "Successful evaluation for filter=" + filter);
+                LOGGER.log(Level.FINE, () -> "Successful evaluation for filter=" + filter);
                 return generatedFeature;
             }
             LOGGER.log(Level.FINE, () -> "NOT successful evaluation for filter=" + filter);

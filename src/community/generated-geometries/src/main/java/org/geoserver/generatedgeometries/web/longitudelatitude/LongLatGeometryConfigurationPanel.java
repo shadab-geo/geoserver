@@ -8,7 +8,6 @@ package org.geoserver.generatedgeometries.web.longitudelatitude;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -18,7 +17,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.TextField;
@@ -33,8 +31,8 @@ import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.ResourcePool;
 import org.geoserver.generatedgeometries.core.GeneratedGeometryConfigurationException;
 import org.geoserver.generatedgeometries.core.GeometryGenerationStrategy;
-import org.geoserver.generatedgeometries.core.longitudelatitude.LongLatGeometryGenerationStrategy;
-import org.geoserver.generatedgeometries.core.longitudelatitude.LongLatGeometryGenerationStrategy.LongLatConfiguration;
+import org.geoserver.generatedgeometries.strategy.longitudelatitude.LongLatConfiguration;
+import org.geoserver.generatedgeometries.strategy.longitudelatitude.LongLatGeometryGenerationStrategy;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.CRSPanel;
 import org.geoserver.web.wicket.SRSToCRSModel;
@@ -44,7 +42,6 @@ public class LongLatGeometryConfigurationPanel extends Panel {
     private String geometryAttributeName;
     private AttributeTypeInfo selectedLonAttribute;
     private AttributeTypeInfo selectedLatAttribute;
-    private boolean useInMemoryFilter;
 
     private final transient Supplier<GeoServerApplication> geoServerApplicationSupplier;
 
@@ -59,7 +56,6 @@ public class LongLatGeometryConfigurationPanel extends Panel {
     private DropDownChoice<AttributeTypeInfo> lonAttributeDropDown;
     private DropDownChoice<AttributeTypeInfo> latAttributeDropDown;
     private CRSPanel declaredCRS;
-    private CheckBox inMemoryFilter;
 
     public LongLatGeometryConfigurationPanel(String panelId, IModel model) {
         this(panelId, model, GeoServerApplication::get);
@@ -99,19 +95,16 @@ public class LongLatGeometryConfigurationPanel extends Panel {
         declaredCRS =
                 new CRSPanel("srsPicker", new SRSToCRSModel(new PropertyModel<>(model, "sRS")));
         add(declaredCRS);
-        inMemoryFilter = new CheckBox("inMemoryCheckBox", forExpression("useInMemoryFilter"));
-        add(inMemoryFilter);
         addAjaxTrigger(
                 geometryAttributeNameTextField,
                 lonAttributeDropDown,
                 latAttributeDropDown,
-                declaredCRS,
-                inMemoryFilter);
+                declaredCRS);
     }
 
     /**
-     * Populates panel using Metadata related LongLat startegy configuration parameters stored
-     * inside FeatyreTyp`s MetaMap
+     * Populates panel using Metadata related LongLat strategy configuration parameters stored
+     * inside FeatureType`s MetaMap
      *
      * @param model only for FeatureTypeInfo using LongLat Strategy
      * @param attributes attributes of Feature
@@ -126,7 +119,6 @@ public class LongLatGeometryConfigurationPanel extends Panel {
 
         MetadataMap metadata = ((FeatureTypeInfo) model.getObject()).getMetadata();
 
-        // checking longitude attribute | check again
         if (metadata.containsKey(LongLatGeometryGenerationStrategy.GEOMETRY_ATTRIBUTE_NAME)) {
             geometryAttributeName =
                     metadata.get(LongLatGeometryGenerationStrategy.GEOMETRY_ATTRIBUTE_NAME)
@@ -141,9 +133,6 @@ public class LongLatGeometryConfigurationPanel extends Panel {
                             attributes,
                             metadata.get(LongLatGeometryGenerationStrategy.LATITUDE_ATTRIBUTE_NAME)
                                     .toString());
-            Serializable inMemoryObj =
-                    metadata.get(LongLatGeometryGenerationStrategy.IN_MEMORY_FILTER);
-            useInMemoryFilter = inMemoryObj != null && Boolean.parseBoolean((String) inMemoryObj);
             //  CRS is already set
         }
     }
@@ -197,8 +186,7 @@ public class LongLatGeometryConfigurationPanel extends Panel {
                 geometryAttributeName,
                 selectedLonAttribute.getName(),
                 selectedLatAttribute.getName(),
-                declaredCRS.getCRS(),
-                useInMemoryFilter);
+                declaredCRS.getCRS());
     }
 
     private AttributeTypeInfo getAttributeTypeInfo(
@@ -207,7 +195,6 @@ public class LongLatGeometryConfigurationPanel extends Panel {
         for (AttributeTypeInfo attribute : attributes) {
             if (attribute.getName().equalsIgnoreCase(find)) return attribute;
         }
-
         return null;
     }
 }

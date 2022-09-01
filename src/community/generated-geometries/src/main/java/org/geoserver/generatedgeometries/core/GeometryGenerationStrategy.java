@@ -108,12 +108,4 @@ public interface GeometryGenerationStrategy<FT extends FeatureType, F extends Fe
      */
     Query convertQuery(FeatureTypeInfo info, Query query);
 
-    /**
-     * Returns true if in memory filtering is required for the provided feature info and filter.
-     *
-     * @param info the feature info
-     * @param filter the filter to check
-     * @return true if in memory filtering is required
-     */
-    boolean requiresInMemoryFiltering(FeatureTypeInfo info, Filter filter);
 }

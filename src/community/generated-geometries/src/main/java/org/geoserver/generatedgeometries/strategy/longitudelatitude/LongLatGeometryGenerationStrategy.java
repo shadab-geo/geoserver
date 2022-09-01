@@ -3,32 +3,26 @@
  * application directory.
  */
 
-package org.geoserver.generatedgeometries.core.longitudelatitude;
+package org.geoserver.generatedgeometries.strategy.longitudelatitude;
 
-import static java.lang.Double.valueOf;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.logging.Level.WARNING;
 import static org.geoserver.generatedgeometries.core.GeometryGenerationStrategy.getStrategyName;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.MetadataMap;
 import org.geoserver.generatedgeometries.core.GeneratedGeometryConfigurationException;
 import org.geoserver.generatedgeometries.core.GeometryGenerationStrategy;
-import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -47,7 +41,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /** Implementation of geometry generation strategy for long/lat attributes in the layer. */
 public class LongLatGeometryGenerationStrategy
@@ -63,41 +56,11 @@ public class LongLatGeometryGenerationStrategy
     public static final String LATITUDE_ATTRIBUTE_NAME = "latitudeAttributeName";
     public static final String GEOMETRY_ATTRIBUTE_NAME = "geometryAttributeName";
     public static final String GEOMETRY_CRS = "geometryCRS";
-    public static final String IN_MEMORY_FILTER = "inMemoryFilter";
 
     private final transient Map<Name, SimpleFeatureType> cache = new HashMap<>();
     private final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
     private Set<String> featureTypeInfos = new HashSet<>();
     private Map<String, LongLatConfiguration> configurations = new HashMap<>();
-
-    public static class LongLatConfiguration implements Serializable {
-        private static final long serialVersionUID = 1L;
-
-        public final String geomAttributeName;
-        public final String longAttributeName;
-        public final String latAttributeName;
-        public final CoordinateReferenceSystem crs;
-        public final int srid;
-        public final boolean inMemoryFilter;
-
-        public LongLatConfiguration(
-                String geomAttributeName,
-                String longAttributeName,
-                String latAttributeName,
-                CoordinateReferenceSystem crs,
-                boolean inMemoryFilter) {
-            this.geomAttributeName = geomAttributeName;
-            this.longAttributeName = longAttributeName;
-            this.latAttributeName = latAttributeName;
-            this.crs = crs;
-            this.inMemoryFilter = inMemoryFilter;
-            try {
-                this.srid = CRS.lookupEpsgCode(crs, true);
-            } catch (FactoryException e) {
-                throw new GeneratedGeometryConfigurationException(e);
-            }
-        }
-    }
 
     Logger logger() {
         return LOGGER;
@@ -156,19 +119,9 @@ public class LongLatGeometryGenerationStrategy
         SimpleFeatureType simpleFeatureType = builder.buildFeatureType();
         cache.put(simpleFeatureType.getName(), simpleFeatureType);
 
-        // guess, this is not required always
         storeConfiguration(info, configuration);
-        LOGGER.log(Level.INFO, "Built feature type: {0}.", simpleFeatureType);
+        LOGGER.log(Level.FINE, "Built feature type: {0}.", simpleFeatureType);
         return simpleFeatureType;
-    }
-
-    @Override
-    public boolean requiresInMemoryFiltering(FeatureTypeInfo info, Filter filter) {
-        final FilterFactory ff = CommonFactoryFinder.getFilterFactory();
-        LongLatConfiguration configuration = getLongLatConfiguration(info);
-        LonLatGeometryFilterVisitor dfv = new LonLatGeometryFilterVisitor(ff, configuration);
-        filter.accept(dfv, ff);
-        return dfv.isRequiresInMemoryFiltering();
     }
 
     public void setConfigurationForLayer(String layerId, LongLatConfiguration configuration) {
@@ -176,7 +129,7 @@ public class LongLatGeometryGenerationStrategy
         cache.clear();
     }
 
-    private LongLatConfiguration getLongLatConfiguration(FeatureTypeInfo info) {
+    public LongLatConfiguration getLongLatConfiguration(FeatureTypeInfo info) {
         String layerId = info.getName();
         LongLatConfiguration configuration = configurations.get(layerId);
         if (configuration == null) {
@@ -190,15 +143,11 @@ public class LongLatGeometryGenerationStrategy
         MetadataMap metadata = info.getMetadata();
         if (metadata.containsKey(GEOMETRY_ATTRIBUTE_NAME)) {
             try {
-                Serializable memoryFilterObj = metadata.get(IN_MEMORY_FILTER);
-                boolean inMemoryFilter =
-                        memoryFilterObj != null && Boolean.parseBoolean((String) memoryFilterObj);
                 return new LongLatConfiguration(
                         metadata.get(GEOMETRY_ATTRIBUTE_NAME).toString(),
                         metadata.get(LONGITUDE_ATTRIBUTE_NAME).toString(),
                         metadata.get(LATITUDE_ATTRIBUTE_NAME).toString(),
-                        CRS.decode(metadata.get(GEOMETRY_CRS).toString()),
-                        inMemoryFilter);
+                        CRS.decode(metadata.get(GEOMETRY_CRS).toString()));
             } catch (FactoryException e) {
                 throw new GeneratedGeometryConfigurationException(e);
             }
@@ -214,7 +163,6 @@ public class LongLatGeometryGenerationStrategy
         metadata.put(LONGITUDE_ATTRIBUTE_NAME, configuration.longAttributeName);
         metadata.put(LATITUDE_ATTRIBUTE_NAME, configuration.latAttributeName);
         metadata.put(GEOMETRY_CRS, CRS.toSRS(configuration.crs));
-        metadata.put(IN_MEMORY_FILTER, String.valueOf(configuration.inMemoryFilter));
     }
 
     @Override
@@ -224,28 +172,26 @@ public class LongLatGeometryGenerationStrategy
             try {
                 SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(schema);
                 LongLatConfiguration configuration = getConfigurationFromMetadata(info);
-                Double x = valueOf(getAsString(simpleFeature, configuration.longAttributeName));
-                Double y = valueOf(getAsString(simpleFeature, configuration.latAttributeName));
-
-                //                String wktPoint = getAsString(simpleFeature,
-                // configuration.geomAttributeName);
-                //
-                //                Point testWktPoint = (Point) new WKTReader().read("");
-                //                Point testWkbPoint = (Point) new WKBReader().read(new byte[1]);
+                double x =
+                        Double.parseDouble(
+                                getAsString(simpleFeature, configuration.longAttributeName));
+                double y =
+                        Double.parseDouble(
+                                getAsString(simpleFeature, configuration.latAttributeName));
 
                 Point point = geometryFactory.createPoint(new Coordinate(x, y));
                 point.setSRID(getLongLatConfiguration(info).srid);
-                //LOGGER.log(Level.FINE, "Generated geometry: {0}", point);
+                LOGGER.log(Level.FINE, "Generated geometry: {0}", point);
 
                 featureBuilder.add(point);
                 for (Property prop : simpleFeature.getProperties()) {
                     featureBuilder.set(prop.getName(), prop.getValue());
                 }
                 simpleFeature = featureBuilder.buildFeature(simpleFeature.getID());
-//                LOGGER.log(
-//                        Level.FINE,
-//                        "Resulting feature with generated geometry: {0}",
-//                        simpleFeature);
+                LOGGER.log(
+                        Level.FINE,
+                        "Resulting feature with generated geometry: {0}",
+                        simpleFeature);
             } catch (Exception e) {
                 String message =
                         format(
@@ -282,44 +228,20 @@ public class LongLatGeometryGenerationStrategy
         Query q = new Query(query);
         q.setFilter(convertFilter(info, query.getFilter()));
         LongLatConfiguration configuration = getLongLatConfiguration(info);
-        boolean requiresInMemmoryFiltering = requiresInMemoryFiltering(info, query.getFilter());
         List<String> properties = new ArrayList<>();
         try {
-            // no fields were sent, use all fields excluding geom field
-            if (query.getPropertyNames() == null) {
-                properties =
-                        info.getFeatureType()
-                                .getDescriptors()
-                                .stream()
-                                .filter(
-                                        propertyDescriptor ->
-                                                !propertyDescriptor
-                                                        .getName()
-                                                        .toString()
-                                                        .equals(configuration.geomAttributeName))
-                                .map(propertyDescriptor -> propertyDescriptor.getName().toString())
-                                .collect(Collectors.toList());
-            } else {
-                // else use the passed fields of this query
-                // but make sure geom field is replaced with Long and Lat fields
-                List<String> existingProperties =
-                        new LinkedList<String>(Arrays.asList(query.getPropertyNames()));
-                // add the filter involved attribute only if filter will be evaluated in memory
-                if (requiresInMemmoryFiltering) {
-                    addFilterAttributes(query.getFilter(), existingProperties);
-                }
-                // remove geom column
-                existingProperties.remove(configuration.geomAttributeName);
-                // make sure longitude field is present
-                if (!existingProperties.contains(configuration.longAttributeName))
-                    existingProperties.add(configuration.longAttributeName);
-                // make sure latitude field is present
-                if (!existingProperties.contains(configuration.latAttributeName))
-                    existingProperties.add(configuration.latAttributeName);
-
-                properties = new ArrayList<>(existingProperties);
-            }
-
+            properties =
+                    info.getFeatureType()
+                            .getDescriptors()
+                            .stream()
+                            .filter(
+                                    propertyDescriptor ->
+                                            !propertyDescriptor
+                                                    .getName()
+                                                    .toString()
+                                                    .equals(configuration.geomAttributeName))
+                            .map(propertyDescriptor -> propertyDescriptor.getName().toString())
+                            .collect(Collectors.toList());
         } catch (Exception e) {
             String message = format("could not convert query [%s]", query);
             LOGGER.log(Level.SEVERE, message, e);
@@ -329,19 +251,4 @@ public class LongLatGeometryGenerationStrategy
         return q;
     }
 
-    /**
-     * Adds the attributes involved on filter to the requested properties list to evaluate filters
-     * in memory.
-     *
-     * @param filter the filter
-     * @param existingProperties requested properties list
-     */
-    private void addFilterAttributes(Filter filter, List<String> existingProperties) {
-        String[] filterAttributes = DataUtilities.attributeNames(filter);
-        for (String attr : filterAttributes) {
-            if (StringUtils.isNotBlank(attr) && !existingProperties.contains(attr)) {
-                existingProperties.add(attr);
-            }
-        }
-    }
 }

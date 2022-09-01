@@ -1,4 +1,4 @@
-package org.geoserver.databricks.ng;
+package org.geoserver.databricks.ng.store;
 
 import java.io.IOException;
 import java.util.Collections;

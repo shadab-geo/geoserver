@@ -402,10 +402,15 @@
           <artifactId>gs-databricks-connector</artifactId>
           <version>${gs.version}</version>
         </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>generated-geometries</id>
+      <dependencies>
         <dependency>
           <groupId>org.geoserver.community</groupId>
           <artifactId>gs-generated-geometries</artifactId>
-          <version>2.21-SNAPSHOT</version>
+          <version>${gs.version}</version>
         </dependency>
       </dependencies>
     </profile>

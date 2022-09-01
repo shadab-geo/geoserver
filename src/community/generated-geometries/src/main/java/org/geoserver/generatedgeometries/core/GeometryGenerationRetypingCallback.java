@@ -28,18 +28,16 @@ public class GeometryGenerationRetypingCallback
 
     private GeometryGenerationStrategy<SimpleFeatureType, SimpleFeature> strategy;
 
-    //    public GeometryGenerationRetypingCallback(
-    //            GeometryGenerationStrategy<SimpleFeatureType, SimpleFeature> strategy) {
-    //        this.strategy = strategy;
-    //    }
-
     private boolean canHandleFeatureType(FeatureTypeInfo featureTypeInfo) {
-        return strategy.canHandle(featureTypeInfo, null);
+        if (strategy != null) return strategy.canHandle(featureTypeInfo, null);
+        return false;
     }
 
     @Override
     public FeatureType retypeFeatureType(FeatureTypeInfo featureTypeInfo, FeatureType featureType) {
-        String strName = (String) featureTypeInfo.getMetadata().get("geometryGenerationStrategy");
+        String strategyName =
+                (String) featureTypeInfo.getMetadata().get("geometryGenerationStrategy");
+        LOGGER.log(Level.FINE, "geometry strategy is: " + strategyName);
         strategy =
                 (GeometryGenerationStrategy<SimpleFeatureType, SimpleFeature>)
                         GeoServerExtensions.bean("longLatStrategy");

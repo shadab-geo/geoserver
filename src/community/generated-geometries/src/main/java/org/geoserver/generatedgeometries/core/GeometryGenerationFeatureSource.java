@@ -64,10 +64,7 @@ class GeometryGenerationFeatureSource extends DecoratingSimpleFeatureSource {
                 features,
                 featureTypeInfo,
                 getSchema(),
-                strategy,
-                strategy.requiresInMemoryFiltering(featureTypeInfo, srcFilter)
-                        ? srcFilter
-                        : Filter.INCLUDE);
+                strategy,srcFilter);
     }
 
     @Override
@@ -78,10 +75,7 @@ class GeometryGenerationFeatureSource extends DecoratingSimpleFeatureSource {
                 features,
                 featureTypeInfo,
                 getSchema(),
-                strategy,
-                strategy.requiresInMemoryFiltering(featureTypeInfo, srcQuery.getFilter())
-                        ? srcQuery.getFilter()
-                        : Filter.INCLUDE);
+                strategy,srcQuery.getFilter());
     }
 
     @Override
