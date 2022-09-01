@@ -17,16 +17,10 @@
               value="org.geoserver.generatedgeometries.web.GeneratedGeometryConfigurationPanel"/>
   </bean>
 
-  <bean id="longLatStrategy" class="org.geoserver.generatedgeometries.core.longitudelatitude.LongLatGeometryGenerationStrategy"/>
+  <bean id="longLatStrategy" class="org.geoserver.generatedgeometries.strategy.longitudelatitude.LongLatGeometryGenerationStrategy"/>
 
   <bean id="longLatStrategyPanel" class="org.geoserver.generatedgeometries.web.longitudelatitude.LongLatGeometryStrategyUIGenerator">
     <constructor-arg ref="longLatStrategy"/>
-  </bean>
-
-  <bean id="wkbstrategy" class="org.geoserver.generatedgeometries.core.longitudelatitude.WkbGeometryGenerationStrategy"/>
-
-  <bean id="wkbStrategyPanel" class="org.geoserver.generatedgeometries.web.wkb.WkbStrategyUIGenerator">
-    <constructor-arg ref="wkbstrategy"/>
   </bean>
 
   <bean id="longLatGeometryResourcePoolCallback" class="org.geoserver.generatedgeometries.core.GeometryGenerationRetypingCallback">

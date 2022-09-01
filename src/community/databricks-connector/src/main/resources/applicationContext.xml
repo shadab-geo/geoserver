@@ -3,4 +3,16 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+
+    <bean id="cacheTabPanel" class="org.geoserver.databricks.ng.cache.web.CacheTabPanelInfo">
+        <property name="id" value="cacheTabPanel"/>
+        <property name="titleKey" value="CacheTabPanel.title"/>
+        <property name="descriptionKey" value="CacheTabPanel.shortDescription"/>
+        <property name="componentClass" value="org.geoserver.databricks.ng.cache.web.CacheTabPanel"/>
+        <property name="order" value="400"/>
+    </bean>
+
+    <bean id="cacheRetypingCallback" class="org.geoserver.databricks.ng.cache.core.CacheRetypingCallback">
+    </bean>
+
 </beans>

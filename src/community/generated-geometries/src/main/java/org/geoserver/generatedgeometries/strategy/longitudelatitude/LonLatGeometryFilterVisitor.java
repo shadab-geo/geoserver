@@ -2,14 +2,13 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geoserver.generatedgeometries.core.longitudelatitude;
+package org.geoserver.generatedgeometries.strategy.longitudelatitude;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.geoserver.generatedgeometries.core.longitudelatitude.LongLatGeometryGenerationStrategy.LongLatConfiguration;
 import org.geotools.filter.visitor.DuplicatingFilterVisitor;
 import org.geotools.util.logging.Logging;
 import org.locationtech.jts.geom.Envelope;
@@ -35,8 +34,6 @@ public class LonLatGeometryFilterVisitor extends DuplicatingFilterVisitor {
     private FilterFactory ff;
     private LongLatConfiguration configuration;
 
-    private boolean requiresInMemoryFiltering = false;
-
     /**
      * @param ff filter factory
      * @param configuration with information about X/Y Fields
@@ -59,16 +56,9 @@ public class LonLatGeometryFilterVisitor extends DuplicatingFilterVisitor {
                 new IntersectsOperation(filter.getExpression1(), filter.getExpression2());
         // if it's a valid intersection operation, build and return the compound native filter
         if (intop.isValid()) {
-            if (configuration.inMemoryFilter) {
-                requiresInMemoryFiltering = true;
-            }
             return buildIntersectFilter(intop);
         }
         return super.visit(filter, extraData);
-    }
-
-    public boolean isRequiresInMemoryFiltering() {
-        return requiresInMemoryFiltering;
     }
 
     private Filter buildIntersectFilter(IntersectsOperation intop) {
@@ -133,35 +123,13 @@ public class LonLatGeometryFilterVisitor extends DuplicatingFilterVisitor {
             return false;
         }
 
-        private String getGeometryWkt() {
-            Geometry geom = (Geometry) geometry.getValue();
-            return geom.toText();
-        }
-
         private Envelope getGeometryBounds() {
             Geometry geom = (Geometry) geometry.getValue();
             return geom.getEnvelopeInternal();
         }
 
         Filter addIntersectionOperation(Filter latlonFilter) {
-            return configuration.inMemoryFilter
-                    ? latlonFilter
-                    : ff.and(latlonFilter, buildNativeIntersectionFilter());
-        }
-
-        Filter buildNativeIntersectionFilter() {
-            String nativeFilterSql =
-                    "SDO_ANYINTERACT(SDO_GEOMETRY('POINT('|| "
-                            + configuration.longAttributeName
-                            + " ||' ' || "
-                            + configuration.latAttributeName
-                            + " || ')'), ? ) = 'TRUE'";
-            LOGGER.log(Level.FINE, "Generated native intersect filter: {0}", nativeFilterSql);
-
-            NativeParametrizedFilter filter =
-                    new NativeParametrizedFilterImpl(
-                            nativeFilterSql, Arrays.asList(geometry.getValue()));
-            return filter;
+            return latlonFilter;
         }
     }
 }

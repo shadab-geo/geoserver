@@ -61,13 +61,7 @@ class GeometryGenerationFeatureSource extends DecoratingSimpleFeatureSource {
         Filter filter = strategy.convertFilter(featureTypeInfo, srcFilter);
         SimpleFeatureCollection features = super.getFeatures(filter);
         return new GeometryGenerationFeatureCollection(
-                features,
-                featureTypeInfo,
-                getSchema(),
-                strategy,
-                strategy.requiresInMemoryFiltering(featureTypeInfo, srcFilter)
-                        ? srcFilter
-                        : Filter.INCLUDE);
+                features, featureTypeInfo, getSchema(), strategy, srcFilter);
     }
 
     @Override
@@ -75,13 +69,7 @@ class GeometryGenerationFeatureSource extends DecoratingSimpleFeatureSource {
         Query query = strategy.convertQuery(featureTypeInfo, srcQuery);
         SimpleFeatureCollection features = super.getFeatures(query);
         return new GeometryGenerationFeatureCollection(
-                features,
-                featureTypeInfo,
-                getSchema(),
-                strategy,
-                strategy.requiresInMemoryFiltering(featureTypeInfo, srcQuery.getFilter())
-                        ? srcQuery.getFilter()
-                        : Filter.INCLUDE);
+                features, featureTypeInfo, getSchema(), strategy, srcQuery.getFilter());
     }
 
     @Override

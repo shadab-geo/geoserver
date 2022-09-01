@@ -1,4 +1,4 @@
-package org.geoserver.databricks.ng;
+package org.geoserver.databricks.ng.store;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -47,7 +47,7 @@ public final class DatabricksJdbcDataStoreFactory extends JDBCDataStoreFactory {
 
     @Override
     protected String getDriverClassName() {
-        return "com.simba.spark.jdbc.Driver";
+        return "com.databricks.client.spark.jdbc.SparkJDBC42Driver";
     }
 
     @Override
@@ -68,13 +68,18 @@ public final class DatabricksJdbcDataStoreFactory extends JDBCDataStoreFactory {
     @Override
     protected String getJDBCUrl(Map<String, ?> params) throws IOException {
         String url =
-                "jdbc:spark://" + HOST.lookUp(params) + ":" + PORT.lookUp(params) + "/default;";
+                "jdbc:databricks://"
+                        + HOST.lookUp(params)
+                        + ":"
+                        + PORT.lookUp(params)
+                        + "/default;";
         url = url + "transportMode=" + TRANSPORT_MODE.lookUp(params) + ";";
         url = url + "ssl=" + SSL.lookUp(params) + ";";
         url = url + "httpPath=" + HTTP_PATH.lookUp(params) + ";";
         url = url + "AuthMech=" + AUTH_MECH.lookUp(params) + ";";
         url = url + "UID=" + USER.lookUp(params) + ";";
-        url = url + "PWD=" + PASSWD.lookUp(params);
+        url = url + "PWD=" + PASSWD.lookUp(params) + ";";
+        url = url + "UseNativeQuery=0";
         return url;
     }
 
