@@ -4,21 +4,31 @@
 <form>
     <wicket:panel>
         <ul>
-            <li >
+            <li>
                 <fieldset>
                     <legend><span><wicket:message key="cacheSettings">Caching Settings</wicket:message></span></legend>
                     <ul>
                         <li class="choiceItem">
                             <input id="cachingEnabled" wicket:id="cachingEnabled" type="checkbox">
-                            <label for="cachingEnabled"><wicket:message key="cachingEnabled">Enable Cache</wicket:message></label>
+                            <label for="cachingEnabled">
+                                <wicket:message key="cachingEnabled">Use cache for this layer</wicket:message>
+                            </label>
                         </li>
-                        <li>
-                            <label for="datastoreName"><wicket:message key="datastoreName">Choose Datastore:</wicket:message></label>
-                            <select class="select" id="datastoreName" wicket:id="datastoreName"></select>
-                        </li>
-                        <li>
-                            <label for="schemaName"><wicket:message key="schemaName">Schema name</wicket:message></label>
-                            <input id="schemaName" class="text" type="text" wicket:id="schemaName">
+                        <li wicket:id="configContainer">
+                            <ul wicket:id="configs">
+                                <li>
+                                    <label for="datastoreName">
+                                        <wicket:message key="datastoreName">Choose cache datastore:</wicket:message>
+                                    </label>
+                                    <select class="select" id="datastoreName" wicket:id="datastoreName"></select>
+                                </li>
+                                <li>
+                                    <label for="schemaName">
+                                        <wicket:message key="schemaName">Choose cache feature type:</wicket:message>
+                                    </label>
+                                    <select class="select" id="schemaName" wicket:id="schemaName"></select>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
                 </fieldset>
