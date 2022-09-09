@@ -20,8 +20,10 @@ public class CacheTabPanel extends PublishedEditTabPanel<LayerInfo> {
             metadata.setObject(new MetadataMap());
         }
 
+        ResourceInfo resourceInfo = getPublishedInfo().getResource();
+
         // cache panel including the checkbox, dropdown and the text field
-        CachePanel tablePanel = new CachePanel("cacheTab", metadata);
+        CachePanel tablePanel = new CachePanel("cacheTab", metadata, resourceInfo.getName());
         tablePanel.setOutputMarkupId(true);
         add(tablePanel);
     }

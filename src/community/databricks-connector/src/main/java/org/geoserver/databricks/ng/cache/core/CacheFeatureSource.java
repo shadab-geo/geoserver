@@ -115,12 +115,13 @@ public class CacheFeatureSource extends DecoratingSimpleFeatureSource {
      */
     private void writeFeatures(SimpleFeatureCollection features, MetadataMap metadata)
             throws IOException {
-        LOGGER.log(Level.INFO, "Writing the features to cache");
         long start = System.currentTimeMillis();
+        LOGGER.log(Level.INFO, "Requesting feature writer");
+        int count = 0;
         try (SimpleFeatureIterator featureIterator = features.features();
                 FeatureWriter<SimpleFeatureType, SimpleFeature> writer =
                         getFeatureWriter((String) metadata.get(SCHEMA_NAME), jdbcDataStore)) {
-            int count = 0;
+            LOGGER.log(Level.INFO, "Starting to write the features to cache");
             while (featureIterator.hasNext()) {
                 SimpleFeature feature = featureIterator.next();
                 SimpleFeature cacheFeature = writer.next();
@@ -135,11 +136,13 @@ public class CacheFeatureSource extends DecoratingSimpleFeatureSource {
                 }
                 writer.write();
                 count++;
+                if (count % jdbcDataStore.getBatchInsertSize() == 0)
+                    LOGGER.log(Level.INFO, "Number of features written to cache: " + count);
             }
-            LOGGER.log(Level.INFO, "Total features fetched: " + count);
-            LOGGER.log(
-                    Level.INFO, "Time to cache: " + (System.currentTimeMillis() - start) + " ms");
         }
+        LOGGER.log(Level.INFO, "Total features fetched: " + count);
+        LOGGER.log(
+                Level.INFO, "Time to cache: " + (System.currentTimeMillis() - start) + " ms");
     }
 
     /**
@@ -185,7 +188,7 @@ public class CacheFeatureSource extends DecoratingSimpleFeatureSource {
         Filter databricksSelectorFilter;
         if (filter == null || filter.isEmpty())
             throw new RuntimeException(
-                    "Please specify the cql filter using 'databricksSelectorFilter' request parameter");
+                    "Please specify the cql filter using 'databricksSelector' request parameter");
 
         try {
             databricksSelectorFilter = ECQL.toFilter(filter);

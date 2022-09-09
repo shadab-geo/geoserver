@@ -2,25 +2,31 @@ package org.geoserver.databricks.ng.cache.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.DataStoreInfo;
+import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.data.DataStore;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.type.Name;
+import org.opengis.feature.type.PropertyDescriptor;
 
 /** A panel to configure the cache setting */
 public class CachePanel extends Panel {
@@ -32,11 +38,17 @@ public class CachePanel extends Panel {
     DropDownChoice<String> storeChoice;
     DropDownChoice<String> featureTypeChoice;
 
+    Label warningLabel;
+    Model<String> warningModel;
+
+    private String layerName;
+
     private static final Logger LOGGER = Logging.getLogger(CachePanel.class);
 
-    public CachePanel(String id, IModel<?> model) {
+    public CachePanel(String id, IModel<?> model, String layerName) {
         super(id, model);
 
+        this.layerName = layerName;
         final WebMarkupContainer configsContainer = new WebMarkupContainer("configContainer");
         configsContainer.setOutputMarkupId(true);
         add(configsContainer);
@@ -80,6 +92,8 @@ public class CachePanel extends Panel {
                     @Override
                     protected void onUpdate(AjaxRequestTarget target) {
                         updateFeatureTypes(target);
+                        warningLabel.setVisible(false);
+                        target.add(warningLabel);
                     }
                 });
         configs.add(storeChoice);
@@ -96,7 +110,23 @@ public class CachePanel extends Panel {
         featureTypeChoice = new DropDownChoice<>(SCHEMA_NAME, schemaNameModel, featureTypes);
         featureTypeChoice.setOutputMarkupId(true);
         add(featureTypeChoice);
+        featureTypeChoice.add(
+                new AjaxFormComponentUpdatingBehavior("change") {
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        updateWarningMessage(target);
+                    }
+                });
         configs.add(featureTypeChoice);
+
+        warningModel = Model.of("");
+
+        // warning label to indicate the attribute differences
+        warningLabel = new Label("warning", warningModel);
+        warningLabel.setOutputMarkupPlaceholderTag(true);
+        warningLabel.setVisible(false);
+        configs.add(warningLabel);
+
     }
 
     private void updateFeatureTypes(AjaxRequestTarget target) {
@@ -104,6 +134,44 @@ public class CachePanel extends Panel {
         if (target != null) {
             target.add(featureTypeChoice);
         }
+    }
+
+    private void updateWarningMessage(AjaxRequestTarget target) {
+        if (target != null) {
+            String warningMsg = getAttributesDiff(featureTypeChoice.getModelObject());
+            warningModel.setObject(warningMsg);
+            warningLabel.setVisible(!warningMsg.isEmpty());
+            target.add(warningLabel);
+        }
+    }
+
+    private String getAttributesDiff(String featureType) {
+        Catalog catalog = (Catalog) GeoServerExtensions.bean("catalog");
+
+        FeatureTypeInfo cacheFeatureTypeInfo = catalog.getFeatureTypeByName(featureType);
+        if (cacheFeatureTypeInfo == null)
+            return "layer " + featureType + " is not published";
+
+        Set<String> cacheFeatureTypeAttributes;
+        try {
+            cacheFeatureTypeAttributes = cacheFeatureTypeInfo.getFeatureType().getDescriptors()
+                    .stream().map(PropertyDescriptor::getName).map(Name::getLocalPart)
+                    .collect(Collectors.toSet());
+        } catch (IOException e) {
+            return "Failed to read " + featureType + " layer schema with exception: " + e.getMessage();
+        }
+
+        FeatureTypeInfo layerFeatureTypeInfo = catalog.getFeatureTypeByName(layerName);
+        Set<String> layerAttributes;
+        try {
+            layerAttributes = layerFeatureTypeInfo.getFeatureType().getDescriptors()
+                    .stream().map(PropertyDescriptor::getName).map(Name::getLocalPart)
+                    .collect(Collectors.toSet());
+        } catch (IOException e) {
+            return "Failed to read " + layerName + " layer schema with exception: " + e.getMessage();
+        }
+        layerAttributes.removeAll(cacheFeatureTypeAttributes);
+        return layerAttributes.isEmpty() ? "" : "Missing attributes: " + layerAttributes;
     }
 
     private List<String> getDataStores() {
@@ -127,6 +195,7 @@ public class CachePanel extends Panel {
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Unable to load feature types for store " + storeName, e);
         }
+        featureTypes.add(0, "None");
         return featureTypes;
     }
 }
