@@ -2,7 +2,6 @@ package org.geoserver.databricks.ng.cache.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -78,6 +77,7 @@ public class CachePanel extends Panel {
                 });
 
         List<String> dataStores = getDataStores();
+        dataStores.add(0, "None");
         final PropertyModel<String> storeNameModel = new PropertyModel<>(model, DATASTORE_NAME);
         if (storeNameModel.getObject() == null) {
             storeNameModel.setObject("");
@@ -126,7 +126,6 @@ public class CachePanel extends Panel {
         warningLabel.setOutputMarkupPlaceholderTag(true);
         warningLabel.setVisible(false);
         configs.add(warningLabel);
-
     }
 
     private void updateFeatureTypes(AjaxRequestTarget target) {
@@ -149,26 +148,35 @@ public class CachePanel extends Panel {
         Catalog catalog = (Catalog) GeoServerExtensions.bean("catalog");
 
         FeatureTypeInfo cacheFeatureTypeInfo = catalog.getFeatureTypeByName(featureType);
-        if (cacheFeatureTypeInfo == null)
-            return "layer " + featureType + " is not published";
+        if (cacheFeatureTypeInfo == null) return "layer " + featureType + " is not published";
 
         Set<String> cacheFeatureTypeAttributes;
         try {
-            cacheFeatureTypeAttributes = cacheFeatureTypeInfo.getFeatureType().getDescriptors()
-                    .stream().map(PropertyDescriptor::getName).map(Name::getLocalPart)
-                    .collect(Collectors.toSet());
+            cacheFeatureTypeAttributes =
+                    cacheFeatureTypeInfo.getFeatureType().getDescriptors().stream()
+                            .map(PropertyDescriptor::getName)
+                            .map(Name::getLocalPart)
+                            .collect(Collectors.toSet());
         } catch (IOException e) {
-            return "Failed to read " + featureType + " layer schema with exception: " + e.getMessage();
+            return "Failed to read "
+                    + featureType
+                    + " layer schema with exception: "
+                    + e.getMessage();
         }
 
         FeatureTypeInfo layerFeatureTypeInfo = catalog.getFeatureTypeByName(layerName);
         Set<String> layerAttributes;
         try {
-            layerAttributes = layerFeatureTypeInfo.getFeatureType().getDescriptors()
-                    .stream().map(PropertyDescriptor::getName).map(Name::getLocalPart)
-                    .collect(Collectors.toSet());
+            layerAttributes =
+                    layerFeatureTypeInfo.getFeatureType().getDescriptors().stream()
+                            .map(PropertyDescriptor::getName)
+                            .map(Name::getLocalPart)
+                            .collect(Collectors.toSet());
         } catch (IOException e) {
-            return "Failed to read " + layerName + " layer schema with exception: " + e.getMessage();
+            return "Failed to read "
+                    + layerName
+                    + " layer schema with exception: "
+                    + e.getMessage();
         }
         layerAttributes.removeAll(cacheFeatureTypeAttributes);
         return layerAttributes.isEmpty() ? "" : "Missing attributes: " + layerAttributes;

@@ -141,8 +141,7 @@ public class CacheFeatureSource extends DecoratingSimpleFeatureSource {
             }
         }
         LOGGER.log(Level.INFO, "Total features fetched: " + count);
-        LOGGER.log(
-                Level.INFO, "Time to cache: " + (System.currentTimeMillis() - start) + " ms");
+        LOGGER.log(Level.INFO, "Time to cache: " + (System.currentTimeMillis() - start) + " ms");
     }
 
     /**
