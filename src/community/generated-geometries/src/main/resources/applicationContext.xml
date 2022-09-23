@@ -23,6 +23,18 @@
     <constructor-arg ref="longLatStrategy"/>
   </bean>
 
+  <bean id="wkbStrategy" class="org.geoserver.generatedgeometries.strategy.wkb.WkbGeometryGenerationStrategy"/>
+
+  <bean id="wkbStrategyPanel" class="org.geoserver.generatedgeometries.web.wkb.WkbStrategyUIGenerator">
+    <constructor-arg ref="wkbStrategy"/>
+  </bean>
+
+  <bean id="wktStrategy" class="org.geoserver.generatedgeometries.strategy.wkt.WktGeometryGenerationStrategy"/>
+
+  <bean id="wktStrategyPanel" class="org.geoserver.generatedgeometries.web.wkt.WktStrategyUIGenerator">
+    <constructor-arg ref="wktStrategy"/>
+  </bean>
+
   <bean id="longLatGeometryResourcePoolCallback" class="org.geoserver.generatedgeometries.core.GeometryGenerationRetypingCallback">
 <!--    <constructor-arg ref="longLatStrategy"/>-->
   </bean>

@@ -41,5 +41,6 @@ public class LongLatGeometryStrategyUIGenerator
         strategy.setConfigurationForLayer(
                 info.getName(), longLatConfigPanel.getLongLatConfiguration());
         strategy.configure(info);
+        info.getMetadata().put("geometryGenerationStrategy", strategy.getName());
     }
 }

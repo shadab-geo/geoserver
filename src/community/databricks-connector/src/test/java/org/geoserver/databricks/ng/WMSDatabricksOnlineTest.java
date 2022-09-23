@@ -1,7 +1,6 @@
 package org.geoserver.databricks.ng;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -9,7 +8,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
-
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.geoserver.catalog.Catalog;
@@ -38,7 +36,6 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.w3c.dom.Document;
 
 public class WMSDatabricksOnlineTest extends AbstractDatabricksOnlineTestSupport {
 
@@ -103,7 +100,6 @@ public class WMSDatabricksOnlineTest extends AbstractDatabricksOnlineTestSupport
                 image,
                 250);
     }
-
 
     protected void addLayer(WorkspaceInfo ws, DataStoreInfo store, String typeName)
             throws IOException, FactoryException {

@@ -35,12 +35,14 @@ public class GeometryGenerationRetypingCallback
 
     @Override
     public FeatureType retypeFeatureType(FeatureTypeInfo featureTypeInfo, FeatureType featureType) {
-        //        String strategyName =
-        //                (String) featureTypeInfo.getMetadata().get("geometryGenerationStrategy");
+        String strategyName =
+                (String) featureTypeInfo.getMetadata().get("geometryGenerationStrategy");
         //        LOGGER.log(Level.FINE, "geometry strategy is: " + strategyName);
+        if (strategyName == null || strategyName.isEmpty()) return featureType;
+
         strategy =
                 (GeometryGenerationStrategy<SimpleFeatureType, SimpleFeature>)
-                        GeoServerExtensions.bean("longLatStrategy");
+                        GeoServerExtensions.bean(strategyName);
 
         if (canHandleFeatureType(featureTypeInfo)) {
             try {
